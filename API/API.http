@@ -89,3 +89,35 @@ POST {{host}}/min/tickets/1/reabrir
 
 ###
 GET {{host}}/min/clientes/1
+
+### ===== AGENTES =====
+### Listar agentes (con sus tickets)
+GET {{host}}/api/agente
+
+### Obtener agente por id (incluye la lista de tickets asignados)
+GET {{host}}/api/agente/1
+
+### Crear agente
+POST {{host}}/api/agente
+Content-Type: application/json
+
+{
+  "correo": "agente1@soporte.com",
+  "telefono": "88887777",
+  "capacidadMaxima": 10
+}
+
+### Actualizar agente
+PUT {{host}}/api/agente/1
+Content-Type: application/json
+
+{
+  "correo": "agente1.actualizado@soporte.com",
+  "telefono": "88887777",
+  "capacidadMaxima": 15,
+  "activo": true
+}
+
+### Eliminar agente (falla con 409 si tiene tickets asociados)
+DELETE {{host}}/api/agente/1
+

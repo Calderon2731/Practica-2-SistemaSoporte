@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -15,5 +15,7 @@ namespace Abstracciones.Agentes
         Task<bool> ActualizarAsync(Agente datos, CancellationToken ct);
 
         Task<bool> EliminarAsync(int id, CancellationToken ct);
+
+        Task<bool> TieneTicketsAsync(int agenteId, CancellationToken ct);
     }
 }

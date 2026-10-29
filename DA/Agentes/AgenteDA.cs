@@ -1,10 +1,8 @@
-﻿using Abstracciones.Agentes;
+using Abstracciones.Agentes;
+using Abstracciones.Excepciones;
+using DA.Comunes;
 using DA.Contexto;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Text;
 
 namespace DA.Agentes
 {
@@ -19,30 +17,26 @@ namespace DA.Agentes
 
         public async Task<bool> ActualizarAsync(Agente datos, CancellationToken ct)
         {
+            var agenteExistente = await _contexto.Agentes.FirstOrDefaultAsync(a => a.Id == datos.Id, ct);
 
-            var AgenteExistente = _contexto.Agentes.FirstOrDefault(a => a.Id == datos.Id);
-
-            if (AgenteExistente == null)
+            if (agenteExistente == null)
             {
                 return false;
             }
 
-            // Actualizar las propiedades del agente
-            AgenteExistente.Correo = datos.Correo;
-            AgenteExistente.Activo = datos.Activo;
-            AgenteExistente.CapacidadMaxima = datos.CapacidadMaxima;
-            AgenteExistente.Telefono = datos.Telefono;
-            
-            // ... actualizar otras propiedades según sea necesario
+            agenteExistente.Correo = datos.Correo;
+            agenteExistente.Activo = datos.Activo;
+            agenteExistente.CapacidadMaxima = datos.CapacidadMaxima;
+            agenteExistente.Telefono = datos.Telefono;
 
             try
             {
                 await _contexto.SaveChangesAsync(ct);
                 return true;
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex) when (ErroresSql.EsDuplicado(ex))
             {
-                throw new ValidationException("Error al actualizar el agente.", ex);
+                throw new ConflictoException($"Ya existe otro agente con el correo '{datos.Correo}'.");
             }
         }
 
@@ -52,49 +46,52 @@ namespace DA.Agentes
 
             try
             {
-                return await _contexto.SaveChangesAsync(ct)
-                    .ContinueWith(t =>
-                    {
-                        if (t.IsFaulted)
-                        {
-                            throw new ValidationException("Error al guardar el agente.");
-                        }
-                        return agente;
-                    }, ct);
-
+                await _contexto.SaveChangesAsync(ct);
+                return agente;
             }
-            catch (Exception ex)
+            catch (DbUpdateException ex) when (ErroresSql.EsDuplicado(ex))
             {
-                throw new ValidationException("Error al guardar el agente.", ex);
+                throw new ConflictoException($"Ya existe un agente con el correo '{agente.Correo}'.");
             }
         }
 
         public async Task<bool> EliminarAsync(int id, CancellationToken ct)
         {
-
-            var agente = await _contexto.Agentes.FindAsync(id);
+            var agente = await _contexto.Agentes.FirstOrDefaultAsync(a => a.Id == id, ct);
             if (agente == null)
             {
                 return false;
             }
-            else
+
+            _contexto.Agentes.Remove(agente);
+            try
             {
-                _contexto.Agentes.Remove(agente);
                 await _contexto.SaveChangesAsync(ct);
                 return true;
+            }
+            catch (DbUpdateException ex) when (ErroresSql.EsLlaveForanea(ex))
+            {
+                throw new ConflictoException("El agente tiene tickets asociados y no se puede eliminar.");
             }
         }
 
         public async Task<Agente?> ObtenerPorIdAsync(int id, CancellationToken ct)
         {
-            var agente = await _contexto.Agentes.AsNoTracking().FirstOrDefaultAsync(a => a.Id == id, ct);
-            return agente;
+            return await _contexto.Agentes
+                .AsNoTracking()
+                .Include(a => a.Tickets)
+                .FirstOrDefaultAsync(a => a.Id == id, ct);
         }
 
-        public async Task<List<Agente>>  ObtenerTodosAsync(CancellationToken ct)
+        public async Task<List<Agente>> ObtenerTodosAsync(CancellationToken ct)
         {
-            return  await _contexto.Agentes.ToListAsync(ct);
+            return await _contexto.Agentes
+                .AsNoTracking()
+                .Include(a => a.Tickets)
+                .ToListAsync(ct);
         }
-                       
+
+        public Task<bool> TieneTicketsAsync(int agenteId, CancellationToken ct) =>
+            _contexto.Tickets.AnyAsync(t => t.AgenteId == agenteId, ct);
     }
 }

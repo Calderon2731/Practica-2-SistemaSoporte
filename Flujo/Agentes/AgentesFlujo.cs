@@ -1,9 +1,5 @@
-﻿using Abstracciones.Agentes;
+using Abstracciones.Agentes;
 using Abstracciones.Excepciones;
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 
 namespace Flujo.Agentes
 {
@@ -31,7 +27,7 @@ namespace Flujo.Agentes
 
             if (!actualizado) 
             {
-                throw new NoEncontradoException("cliente", id);
+                throw new NoEncontradoException("Agente", id);
             }
         }
 
@@ -39,37 +35,44 @@ namespace Flujo.Agentes
         {
             var correo = NormalizarCorreo(dto.Correo);
 
-       
-            var Agente = new Agente
+            var agente = new Agente
             {
-                Correo = dto.Correo,
+                Correo = correo,
                 Telefono = dto.Telefono,
                 CapacidadMaxima = dto.CapacidadMaxima,
                 Activo = true,
                 FechaIngreso = DateTime.UtcNow,
             };
-            await _da.AgregarAsync(Agente, ct);
-            return AgenteMapeador.ADto(Agente);
+            await _da.AgregarAsync(agente, ct);
+            return AgenteMapeador.ADto(agente);
         }
 
         public async Task EliminarAsync(int id, CancellationToken ct)
         {
-            await _da.EliminarAsync(id, ct);
+            if (await _da.TieneTicketsAsync(id, ct))
+            {
+                throw new ConflictoException("El agente tiene tickets asociados y no se puede eliminar.");
+            }
+
+            var eliminado = await _da.EliminarAsync(id, ct);
+            if (!eliminado)
+            {
+                throw new NoEncontradoException("Agente", id);
+            }
         }
 
-        public async Task<Agente?> ObtenerPorIdAsync(int id, CancellationToken ct)
+        public async Task<AgenteDto?> ObtenerPorIdAsync(int id, CancellationToken ct)
         {
             var agente = await _da.ObtenerPorIdAsync(id, ct);
-            return agente;
+            return agente is null ? null : AgenteMapeador.ADto(agente);
         }
 
-        public async Task<List<Agente>> ObtenerTodosAsync(CancellationToken ct)
+        public async Task<List<AgenteDto>> ObtenerTodosAsync(CancellationToken ct)
         {
             var agentes = await _da.ObtenerTodosAsync(ct);
-            return agentes;
+            return agentes.Select(AgenteMapeador.ADto).ToList();
         }
 
         private static string NormalizarCorreo(string correo) => correo.Trim().ToLowerInvariant();
     }
-
 }

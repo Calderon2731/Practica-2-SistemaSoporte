@@ -1,7 +1,5 @@
-﻿using Abstracciones.Agentes;
-using System;
-using System.Collections.Generic;
-using System.Text;
+using Abstracciones.Agentes;
+using Flujo.Tickets;
 
 namespace Flujo.Agentes
 {
@@ -15,7 +13,8 @@ namespace Flujo.Agentes
                 Telefono = agente.Telefono,
                 CapacidadMaxima = agente.CapacidadMaxima,
                 Activo = agente.Activo,
-                FechaIngreso = agente.FechaIngreso
+                FechaIngreso = agente.FechaIngreso,
+                Tickets = agente.Tickets?.Select(TicketMapeador.ADto).ToList() ?? []
             };
     }
 }

@@ -1,4 +1,4 @@
-﻿using Abstracciones.Agentes;
+using Abstracciones.Agentes;
 using Microsoft.AspNetCore.Mvc;
 
 
@@ -19,9 +19,9 @@ namespace API.Controllers
         [HttpGet]
         [ProducesResponseType<IReadOnlyList<AgenteDto>>(StatusCodes.Status200OK)]
         [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<IReadOnlyList<AgenteDto>>> Listar()
+        public async Task<ActionResult<IReadOnlyList<AgenteDto>>> Listar(CancellationToken ct)
         {
-            var agentes = await _flujo.ObtenerTodosAsync(CancellationToken.None);
+            var agentes = await _flujo.ObtenerTodosAsync(ct);
             return Ok(agentes);
         }
 
@@ -30,9 +30,9 @@ namespace API.Controllers
         [HttpGet("{id:int:min(1)}")]
         [ProducesResponseType<AgenteDto>(StatusCodes.Status200OK)]
         [ProducesResponseType<ValidationProblemDetails>(StatusCodes.Status400BadRequest)]
-        public async Task<ActionResult<AgenteDto>> ObtenerPorId(int id)
+        public async Task<ActionResult<AgenteDto>> ObtenerPorId(int id, CancellationToken ct)
         {
-            var agente = await _flujo.ObtenerPorIdAsync(id, CancellationToken.None);
+            var agente = await _flujo.ObtenerPorIdAsync(id, ct);
             if (agente == null)
             {
                 return NotFound();
@@ -42,9 +42,9 @@ namespace API.Controllers
 
         // POST api/<AgenteController>
         [HttpPost]
-        public async Task<ActionResult<AgenteDto>> CrearAgente([FromBody] CrearAgenteDtos dto)
+        public async Task<ActionResult<AgenteDto>> CrearAgente([FromBody] CrearAgenteDtos dto, CancellationToken ct)
         {
-            var agente = await _flujo.AgregarAsync(dto, CancellationToken.None);
+            var agente = await _flujo.AgregarAsync(dto, ct);
             return CreatedAtAction(nameof(ObtenerPorId), new { id = agente.Id }, agente);
         }
 

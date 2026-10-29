@@ -131,5 +131,6 @@ public class TicketDA : ITicketDA
     private IQueryable<Ticket> ConDetalle() =>
         _ctx.Tickets.AsNoTracking()
             .Include(t => t.Cliente)
+            .Include(t => t.Agente)
             .Include(t => t.TicketEtiquetas).ThenInclude(te => te.Etiqueta);
 }
