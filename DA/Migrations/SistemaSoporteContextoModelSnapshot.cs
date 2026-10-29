@@ -22,6 +22,39 @@ namespace DA.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("Abstracciones.Agentes.Agente", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("Activo")
+                        .HasColumnType("bit");
+
+                    b.Property<int>("CapacidadMaxima")
+                        .HasMaxLength(50)
+                        .HasColumnType("int");
+
+                    b.Property<string>("Correo")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<DateTime>("FechaIngreso")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Telefono")
+                        .IsRequired()
+                        .HasMaxLength(8)
+                        .HasColumnType("nvarchar(8)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Agentes");
+                });
+
             modelBuilder.Entity("Abstracciones.Clientes.Cliente", b =>
                 {
                     b.Property<int>("Id")
@@ -190,6 +223,8 @@ namespace DA.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("AgenteId");
+
                     b.HasIndex("ClienteId");
 
                     b.HasIndex("Codigo")
@@ -234,6 +269,10 @@ namespace DA.Migrations
 
             modelBuilder.Entity("Abstracciones.Tickets.Ticket", b =>
                 {
+                    b.HasOne("Abstracciones.Agentes.Agente", null)
+                        .WithMany("Tickets")
+                        .HasForeignKey("AgenteId");
+
                     b.HasOne("Abstracciones.Clientes.Cliente", "Cliente")
                         .WithMany("Tickets")
                         .HasForeignKey("ClienteId")
@@ -241,6 +280,11 @@ namespace DA.Migrations
                         .IsRequired();
 
                     b.Navigation("Cliente");
+                });
+
+            modelBuilder.Entity("Abstracciones.Agentes.Agente", b =>
+                {
+                    b.Navigation("Tickets");
                 });
 
             modelBuilder.Entity("Abstracciones.Clientes.Cliente", b =>

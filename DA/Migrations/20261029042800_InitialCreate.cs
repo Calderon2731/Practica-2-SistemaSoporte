@@ -6,11 +6,28 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace DA.Migrations
 {
     /// <inheritdoc />
-    public partial class CrearProcedimientos : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Agentes",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Correo = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Telefono = table.Column<string>(type: "nvarchar(8)", maxLength: 8, nullable: false),
+                    CapacidadMaxima = table.Column<int>(type: "int", maxLength: 50, nullable: false),
+                    Activo = table.Column<bool>(type: "bit", nullable: false),
+                    FechaIngreso = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Agentes", x => x.Id);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Clientes",
                 columns: table => new
@@ -62,6 +79,11 @@ namespace DA.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Tickets", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Tickets_Agentes_AgenteId",
+                        column: x => x.AgenteId,
+                        principalTable: "Agentes",
+                        principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_Tickets_Clientes_ClienteId",
                         column: x => x.ClienteId,
@@ -141,6 +163,11 @@ namespace DA.Migrations
                 column: "EtiquetaId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Tickets_AgenteId",
+                table: "Tickets",
+                column: "AgenteId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Tickets_ClienteId",
                 table: "Tickets",
                 column: "ClienteId");
@@ -176,6 +203,9 @@ namespace DA.Migrations
 
             migrationBuilder.DropTable(
                 name: "Tickets");
+
+            migrationBuilder.DropTable(
+                name: "Agentes");
 
             migrationBuilder.DropTable(
                 name: "Clientes");

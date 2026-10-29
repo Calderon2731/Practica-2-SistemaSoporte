@@ -14,7 +14,6 @@ namespace Abstracciones.Agentes
         [StringLength(8, ErrorMessage = "El teléfono debe tener exactamente 8 caracteres")]
         public string Telefono { get; set; }
         [Required]
-        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres")]
         public int CapacidadMaxima { get; set; }
     }
 
@@ -26,7 +25,6 @@ namespace Abstracciones.Agentes
         [StringLength(8, ErrorMessage = "El teléfono debe tener exactamente 8 caracteres")]
         public string Telefono { get; set; }
         [Required]
-        [StringLength(50, ErrorMessage = "El nombre no puede exceder los 50 caracteres")]
         public int CapacidadMaxima { get; set; }
         [Required]
         public bool Activo { get; set; }

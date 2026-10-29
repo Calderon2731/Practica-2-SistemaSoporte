@@ -16,7 +16,6 @@ public class SistemaSoporteContexto : DbContext
     public DbSet<Comentario> Comentarios => Set<Comentario>();
     public DbSet<Etiqueta> Etiquetas => Set<Etiqueta>();
     public DbSet<TicketEtiqueta> TicketEtiquetas => Set<TicketEtiqueta>();
-
     public DbSet<Agente> Agentes => Set<Agente>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
